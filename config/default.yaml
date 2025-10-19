@@ -1,0 +1,11 @@
+# Project config (fill dần)
+sim:
+  Ts: 5e-5     # 50 us (ví dụ)
+  duration: 0.5
+plant:
+  type: boost_avg
+  non_ideal: false
+controller:
+  type: st       # pi/smc/st
+observer:
+  type: eso      # hoặc none

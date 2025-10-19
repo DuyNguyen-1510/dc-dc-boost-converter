@@ -1,0 +1,1 @@
+"""Placeholder: KPI metrics computation."""

@@ -1,0 +1,8 @@
+# Giới hạn phần cứng (điền sau)
+voltage:
+  v_max: 60
+current:
+  i_max: 10
+duty:
+  min: 0.02
+  max: 0.98
