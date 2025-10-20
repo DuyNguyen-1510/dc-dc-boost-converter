@@ -6,6 +6,6 @@ plant:
   type: boost_avg
   non_ideal: false
 controller:
-  type: st       # pi/smc/st
+  type: smc       # pi/smc/st
 observer:
   type: eso      # hoặc none
