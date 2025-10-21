@@ -34,9 +34,9 @@ def main():
                 help="tắt non_ideal khi cần")
 
     ap.add_argument("--rL", type=float, default=0.08)
-    ap.add_argument("--rDS", type=float, default=0.055)
-    ap.add_argument("--VF", type=float, default=0.7)
-    ap.add_argument("--RF", type=float, default=0.01)
+    ap.add_argument("--rDS", type=float, default=0.0)
+    ap.add_argument("--VF", type=float, default=0.0)
+    ap.add_argument("--RF", type=float, default=0.0)
     args = ap.parse_args()
 
     par = BoostParasitics(rL=args.rL, rDS=args.rDS, VF=args.VF, RF=args.RF)
