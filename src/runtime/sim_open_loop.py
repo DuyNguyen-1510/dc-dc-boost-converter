@@ -2,12 +2,13 @@
 from __future__ import annotations
 import os, time, argparse, sys
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Add project root to Python path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from src.plant.power_avg import BoostParams, BoostParasitics, BoostAveragedPlant
+from src.plant.power_avg import BoostParams, BoostParasitics, BoostAveragedPlant, step_at
 
 def steady_state_ic(Vin: float, R: float, D: float) -> tuple[float, float]:
     """Equilibrium ideal (điểm làm việc) để bỏ quá độ khởi động."""
@@ -19,7 +20,16 @@ def main():
     ap = argparse.ArgumentParser("Open-loop boost: continuous plant + ZOH (no save)")
     ap.add_argument("--L", type=float, default=100e-6)
     ap.add_argument("--C", type=float, default=1e-3)
+
     ap.add_argument("--Vin", type=float, default=24.0)
+    ap.add_argument("--Vin_drop", type=float, default=10.0,
+                help="Mức Vin khi sụt (bỏ qua nếu không đặt)")
+    ap.add_argument("--t_drop", type=float, default=0.05,
+                help="Thời điểm bắt đầu sụt [s]")
+    ap.add_argument("--t_recover", type=float, default=0.1,
+                help="Thời điểm khôi phục Vin ban đầu (bỏ qua nếu giữ nguyên mức sụt)")
+
+
     ap.add_argument("--R", type=float, default=4.5)
     ap.add_argument("--duty", type=float, default=0.55)
     ap.add_argument("--Ts", type=float, default=10e-5)
@@ -40,7 +50,22 @@ def main():
     args = ap.parse_args()
 
     par = BoostParasitics(rL=args.rL, rDS=args.rDS, VF=args.VF, RF=args.RF)
-    cfg = BoostParams(L=args.L, C=args.C, Vin=args.Vin, R=args.R,
+
+    Vin_profile = args.Vin
+    if args.Vin_drop is not None and args.t_drop is not None:
+        drop_fun = step_at(args.t_drop, args.Vin, args.Vin_drop)
+        if args.t_recover is None:
+            Vin_profile = drop_fun
+        else:
+            def Vin_profile(t: float) -> float:
+                if t < args.t_drop:
+                    return args.Vin
+                if t < args.t_recover:
+                    return args.Vin_drop
+                return args.Vin
+
+
+    cfg = BoostParams(L=args.L, C=args.C, Vin=Vin_profile, R=args.R,
                       d_min=0.02, d_max=0.98, non_ideal=args.non_ideal, par=par)
     plant = BoostAveragedPlant(cfg)
 
@@ -60,9 +85,23 @@ def main():
         t_list[k], i_list[k], v_list[k] = t, x[0], x[1]
 
     # Vẽ không lưu file
+    mpl.rcParams.update({
+    "svg.fonttype": "none",
+    "font.family": "serif",
+    "font.serif": ["Times New Roman"],
+    "mathtext.fontset": "stix",
+    "axes.unicode_minus": False,
+    "font.size": 10,                 # cỡ chữ cố định (pt)
+    })
+
     fig, ax = plt.subplots(2, 1, figsize=(8,5), sharex=True)
+    
     ax[0].plot(t_list, i_list); ax[0].set_ylabel("iL [A]")
+    ax[0].grid(True, alpha=0.3)
+
     ax[1].plot(t_list, v_list); ax[1].set_ylabel("vo [V]"); ax[1].set_xlabel("t [s]")
+    ax[1].grid(True, alpha=0.3)
+    
     fig.suptitle("Boost open-loop (continuous plant, ZOH duty)")
     fig.tight_layout()
     plt.show()
