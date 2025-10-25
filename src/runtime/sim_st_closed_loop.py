@@ -63,12 +63,12 @@ def main():
     parser.add_argument("--V_ref", type=float, default=48.0, help="Target output voltage [V]")
     
     # Test scenario timing
-    parser.add_argument("--t_drop_start", type=float, default=0.1, help="Start time for voltage drop [s]")
-    parser.add_argument("--t_drop_end", type=float, default=0.3, help="End time for voltage drop [s]")
+    parser.add_argument("--t_drop_start", type=float, default=0.02, help="Start time for voltage drop [s]")
+    parser.add_argument("--t_drop_end", type=float, default=0.04, help="End time for voltage drop [s]")
     
     # Simulation parameters
     parser.add_argument("--Ts", type=float, default=10e-6, help="Sampling time [s]")
-    parser.add_argument("--duration", type=float, default=0.5, help="Simulation duration [s]")
+    parser.add_argument("--duration", type=float, default=0.06, help="Simulation duration [s]")
     
     # ST Controller parameters
     parser.add_argument("--c1", type=float, default=1, help="Sliding surface weight c1")
@@ -226,30 +226,31 @@ def main():
     "font.size": 10,                 # cỡ chữ cố định (pt)
     })
 
-    fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(5.01, 4.2), dpi=300, sharex=True)
     
     # Input and output voltages
-    axes[0].plot(t_array, vin_array, 'b-', label='Vi', linewidth=1.5)
-    axes[0].plot(t_array, vo_array, 'r-', label='Vo', linewidth=1.5)
-    axes[0].plot(t_array, vo_ref_array, 'k--', label='Vo_ref', linewidth=1.5)
+    axes[0].plot(t_array, vin_array, 'b-', label='Vi - Входное напряжение', linewidth=0.7)
+    axes[0].plot(t_array, vo_array, 'r-', label='Vo - Выходное напряжение', linewidth=0.7)
+    axes[0].plot(t_array, vo_ref_array, 'k--', label='Vo_ref - Заданное напряжение', linewidth=0.7)
     axes[0].axvspan(args.t_drop_start, args.t_drop_end, alpha=0.2, color='gray', label='Период проседания напряжения')
     axes[0].set_ylabel('Напряжения [В]')
     axes[0].legend()
     axes[0].grid(True, alpha=0.3)
-    axes[0].set_title('ST Регулятор: Проверка падения входного напряжения')
+    # axes[0].set_title('ST Регулятор: Проверка падения входного напряжения')
     
     # Inductor current
-    axes[1].plot(t_array, iL_array, 'g-', linewidth=1.5)
-    axes[1].axvspan(args.t_drop_start, args.t_drop_end, alpha=0.2, color='gray')
-    axes[1].set_ylabel('Ток индуктивности, iL [A]')
-    axes[1].grid(True, alpha=0.3)
+    # axes[1].plot(t_array, iL_array, 'g-', linewidth=1.5)
+    # axes[1].axvspan(args.t_drop_start, args.t_drop_end, alpha=0.2, color='gray')
+    # axes[1].set_ylabel('Ток индуктивности, iL [A]')
+    # axes[1].grid(True, alpha=0.3)
     
     # Duty cycle
-    axes[2].plot(t_array, duty_array, 'm-', linewidth=1.5)
-    axes[2].axvspan(args.t_drop_start, args.t_drop_end, alpha=0.2, color='gray')
-    axes[2].set_ylabel('Скважность, d')
-    axes[2].set_xlabel('Время, t [s]')
-    axes[2].grid(True, alpha=0.3)
+    axes[1].plot(t_array, duty_array, 'm-', label="d - Скважность", linewidth=0.7)
+    axes[1].axvspan(args.t_drop_start, args.t_drop_end, alpha=0.2, color='gray')
+    axes[1].set_ylabel('Скважность, d')
+    axes[1].set_xlabel('Время, t [с]')
+    axes[1].set_ylim(0, 1)
+    axes[1].grid(True, alpha=0.3)
     
     # Sliding surface and disturbance estimate
     # axes[3].plot(t_array, s_array, 'c-', label='Скользящая поверхность, s', linewidth=1.5)
